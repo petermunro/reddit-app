@@ -1,7 +1,8 @@
 import { combineReducers } from 'redux'
 import {
   SELECT_REDDIT, INVALIDATE_REDDIT,
-  REQUEST_POSTS, RECEIVE_POSTS
+  REQUEST_POSTS, RECEIVE_POSTS,
+  API_ERROR
 } from '../actions'
 
 const selectedReddit = (state = 'reactjs', action) => {
@@ -16,6 +17,7 @@ const selectedReddit = (state = 'reactjs', action) => {
 const posts = (state = {
   isFetching: false,
   didInvalidate: false,
+  error: '',
   items: []
 }, action) => {
   switch (action.type) {
@@ -27,6 +29,7 @@ const posts = (state = {
     case REQUEST_POSTS:
       return {
         ...state,
+        error: '',
         isFetching: true,
         didInvalidate: false
       }
@@ -38,6 +41,12 @@ const posts = (state = {
         items: action.posts,
         lastUpdated: action.receivedAt
       }
+    case API_ERROR:
+      return {
+        ...state,
+        error: action.error,
+        items: []
+      }
     default:
       return state
   }
@@ -48,6 +57,7 @@ const postsByReddit = (state = { }, action) => {
     case INVALIDATE_REDDIT:
     case RECEIVE_POSTS:
     case REQUEST_POSTS:
+    case API_ERROR:
       return {
         ...state,
         [action.reddit]: posts(state[action.reddit], action)

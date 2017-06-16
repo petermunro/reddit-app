@@ -35,15 +35,16 @@ class App extends Component {
 
     const { dispatch, selectedReddit } = this.props
 
-    // TODO
-
+    dispatch(invalidateReddit(selectedReddit));
+    dispatch(fetchPostsIfNeeded(selectedReddit));
   }
 
   render() {
-    const { selectedReddit, posts, isFetching, lastUpdated } = this.props
+    const { selectedReddit, posts, isFetching, lastUpdated, error } = this.props
     const isEmpty = posts.length === 0
     return (
       <div>
+        { error && <p>{error}</p> }
         <Picker value={selectedReddit}
                 onChange={this.handleChange}
                 options={[ 'reactjs', 'frontend' ]} />
@@ -76,6 +77,7 @@ const mapStateToProps = state => {
   const {
     isFetching,
     lastUpdated,
+    error,
     items: posts
   } = postsByReddit[selectedReddit] || {
     isFetching: true,
@@ -86,7 +88,8 @@ const mapStateToProps = state => {
     selectedReddit,
     posts,
     isFetching,
-    lastUpdated
+    lastUpdated,
+    error
   }
 }
 

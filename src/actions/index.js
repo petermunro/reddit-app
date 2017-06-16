@@ -1,7 +1,10 @@
+import checkHttpStatus from './checkHttpStatus';
+
 export const REQUEST_POSTS = 'REQUEST_POSTS'
 export const RECEIVE_POSTS = 'RECEIVE_POSTS'
 export const SELECT_REDDIT = 'SELECT_REDDIT'
 export const INVALIDATE_REDDIT = 'INVALIDATE_REDDIT'
+export const API_ERROR = 'API_ERROR'
 
 export const selectReddit = reddit => ({
   type: SELECT_REDDIT,
@@ -26,9 +29,16 @@ export const receivePosts = (reddit, json) => ({
 })
 
 const fetchPosts = reddit => dispatch => {
+  dispatch(requestPosts(reddit));
 
-  // TODO
-
+  return fetch(`https://www.reddit.com/r/${reddit}.json`)
+    .then(checkHttpStatus)
+    .then(json => json.json())
+    .then(posts => dispatch(receivePosts(reddit, posts)))
+    .catch(error => {
+      console.log('Error:', error);
+      dispatch(notifyError(reddit, error))
+    });
 }
 
 const shouldFetchPosts = (state, reddit) => {
@@ -46,4 +56,13 @@ export const fetchPostsIfNeeded = reddit => (dispatch, getState) => {
   if (shouldFetchPosts(getState(), reddit)) {
     return dispatch(fetchPosts(reddit))
   }
+}
+
+export const notifyError = (reddit, error) => {
+  console.log('Error:', error);
+  return {
+    type: API_ERROR,
+    reddit,
+    error: error.message,
+  };
 }
